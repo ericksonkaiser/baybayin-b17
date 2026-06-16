@@ -1,31 +1,687 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baybayin B17 Interactive - Matuto ng Baybayin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tagalog&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-primary: #faf5ff;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f3e8ff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --accent: #7c3aed;
+  --accent-hover: #6d28d9;
+  --border: #e5e7eb;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --shadow: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1e1b4b;
+  --bg-secondary: #312e81;
+  --bg-tertiary: #3730a3;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --accent: #a78bfa;
+  --accent-hover: #8b5cf6;
+  --border: #4c1d95;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+}
+
+.baybayin {
+  font-family: 'Noto Sans Tagalog', sans-serif!important;
+  font-size: 1.5em;
+  line-height: 1.8;
+}
+
+.baybayin-lg {
+  font-family: 'Noto Sans Tagalog', sans-serif!important;
+  font-size: 3rem;
+  line-height: 1.4;
+}
+
+.baybayin-xl {
+  font-family: 'Noto Sans Tagalog', sans-serif!important;
+  font-size: 4rem;
+  line-height: 1.4;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px var(--shadow);
+}
+
+.btn {
+  background: var(--accent);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--border);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.flashcard {
+  perspective: 1000px;
+  height: 300px;
+  cursor: pointer;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped.flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front,.flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+  background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+  color: white;
+}
+
+.quiz-option {
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  padding: 1rem;
+  border-radius: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quiz-option:hover {
+  border-color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
+.quiz-option.correct {
+  background: #dcfce7;
+  border-color: var(--success);
+  color: #166534;
+}
+
+[data-theme="dark"].quiz-option.correct {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.quiz-option.wrong {
+  background: #fee2e2;
+  border-color: var(--error);
+  color: #991b1b;
+}
+
+[data-theme="dark"].quiz-option.wrong {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.rule-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: var(--bg-tertiary);
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.rule-arrow {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.syllable-box {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  margin: 0.25rem;
+  font-weight: 500;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  color: var(--accent);
+}
+
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.b17-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 0.75rem;
+}
+
+.b17-char {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.b17-char:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border);
+  transition:.3s;
+  border-radius: 28px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition:.3s;
+  border-radius: 50%;
+}
+
+input:checked +.toggle-slider {
+  background-color: var(--accent);
+}
+
+input:checked +.toggle-slider:before {
+  transform: translateX(22px);
+}
+
+.alert-box {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  margin-top: 1rem;
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.alert-info {
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  color: var(--accent);
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--warning);
+}
+
+@media (max-width: 640px) {
+ .baybayin-lg { font-size: 2rem; }
+ .baybayin-xl { font-size: 2.5rem; }
+ .tab-btn { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+ .card { padding: 1rem; }
+}
+</style>
+</head>
+<body>
+<div class="min-h-screen">
+  <header class="sticky top-0 z-50 bg-[var(--bg-secondary)] border-b border-[var(--border)] shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-4">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="baybayin text-4xl text-[var(--accent)]">ᜊ</div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold">Baybayin B17</h1>
+            <p class="text-xs md:text-sm text-[var(--text-secondary)]">Interactive Learning</p>
+          </div>
+        </div>
+        <button id="themeToggle" class="btn btn-secondary p-3" aria-label="Toggle dark mode">
+          <svg id="sunIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          <svg id="moonIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <nav class="max-w-6xl mx-auto px-4 overflow-x-auto">
+      <div class="flex gap-1">
+        <button class="tab-btn active" data-tab="translator">Tagasalin</button>
+        <button class="tab-btn" data-tab="aralin">Aralin</button>
+        <button class="tab-btn" data-tab="flashcards">Flashcards</button>
+        <button class="tab-btn" data-tab="quiz">Quiz</button>
+        <button class="tab-btn" data-tab="worksheet">Worksheet</button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-6 md:py-10">
+    <!-- TRANSLATOR TAB -->
+    <div id="translator" class="tab-content active">
+      <div class="grid gap-6">
+        <div class="card">
+          <div class="flex items-start justify-between mb-4 gap-4">
+            <div class="flex-1">
+              <h2 class="text-2xl font-bold mb-2">Tagasalin ng Baybayin</h2>
+              <p class="text-sm text-[var(--text-secondary)]">May Auto-Filipinize para sa mga banyagang salita</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-medium">Auto-Filipinize</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoFilipinizeToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <label class="block text-sm font-medium mb-2 text-[var(--text-secondary)]">I-type ang salita:</label>
+          <input type="text" id="tagalogInput" class="input-field mb-2" placeholder="Hal: coffee, van, queen" value="coffee">
+
+          <div id="filipinizeNote" class="alert-box alert-info mb-4">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <strong>Auto-Filipinize Rules:</strong> C→K, F→P, J→Dy/H, Ñ→Ny, Q→K, V→B, X→Ks, Z→S
+            </div>
+          </div>
+
+          <div id="foreignLetterAlert" class="alert-box alert-warning mb-4" style="display:none;">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+              <strong>Walang katumbas sa Baybayin B17:</strong> May mga banyagang letra na hindi maisasalin. I-ON ang Auto-Filipinize para i-convert.
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button class="btn btn-secondary text-sm" onclick="setExample('coffee')">coffee</button>
+            <button class="btn btn-secondary text-sm" onclick="setExample('van')">van</button>
+            <button class="btn btn-secondary text-sm" onclick="setExample('quezon')">quezon</button>
+            <button class="btn btn-secondary text-sm" onclick="setExample('zebra')">zebra</button>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="font-semibold mb-3 text-[var(--accent)]">STEP 1: Hatiin sa Pantig</h3>
+              <div id="syllableOutput" class="min-h- p-4 bg-[var(--bg-tertiary)] rounded-lg">
+                <span class="text-[var(--text-secondary)]">Pantig lalabas dito...</span>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-semibold mb-3 text-[var(--accent)]">STEP 2: Conversion Rules</h3>
+              <div id="rulesOutput" class="min-h- p-4 bg-[var(--bg-tertiary)] rounded-lg max-h-64 overflow-y-auto">
+                <span class="text-[var(--text-secondary)]">Rules lalabas dito...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <h3 class="font-semibold mb-3 text-[var(--accent)]">Resulta sa Baybayin:</h3>
+            <div id="baybayinOutput" class="card bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] text-white">
+              <div class="baybayin-xl text-center">ᜃᜓᜉᜒ</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARALIN TAB -->
+    <div id="aralin" class="tab-content">
+      <div class="grid gap-6">
+        <div class="card">
+          <h2 class="text-2xl font-bold mb-4">B17 Chart - Mga Letra ng Baybayin</h2>
+          <p class="text-[var(--text-secondary)] mb-6">Ang B17 ay ang tradisyonal na Baybayin na may 17 pangunahing karakter. Ang bawat karakter ay may katumbas na tunog "a".</p>
+
+          <h3 class="font-semibold mb-3 text-[var(--accent)]">Mga Patinig</h3>
+          <div class="b17-grid mb-6">
+            <div class="b17-char">
+              <div class="baybayin text-3xl">ᜀ</div>
+              <div class="text-sm font-medium mt-1">a</div>
+            </div>
+            <div class="b17-char">
+              <div class="baybayin text-3xl">ᜁ</div>
+              <div class="text-sm font-medium mt-1">e/i</div>
+            </div>
+            <div class="b17-char">
+              <div class="baybayin text-3xl">ᜂ</div>
+              <div class="text-sm font-medium mt-1">o/u</div>
+            </div>
+          </div>
+
+          <h3 class="font-semibold mb-3 text-[var(--accent)]">Mga Katinig</h3>
+          <div class="b17-grid">
+            <div class="b17-char"><div class="baybayin text-3xl">ᜊ</div><div class="text-sm mt-1">ba</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜃ</div><div class="text-sm mt-1">ka</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜇ</div><div class="text-sm mt-1">da/ra</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜄ</div><div class="text-sm mt-1">ga</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜑ</div><div class="text-sm mt-1">ha</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜎ</div><div class="text-sm mt-1">la</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜋ</div><div class="text-sm mt-1">ma</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜈ</div><div class="text-sm mt-1">na</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜉ</div><div class="text-sm mt-1">pa</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜐ</div><div class="text-sm mt-1">sa</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜆ</div><div class="text-sm mt-1">ta</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜏ</div><div class="text-sm mt-1">wa</div></div>
+            <div class="b17-char"><div class="baybayin text-3xl">ᜌ</div><div class="text-sm mt-1">ya</div></div>
+          </div>
+
+          <div class="mt-6 p-4 bg-[var(--bg-tertiary)] rounded-lg">
+            <h3 class="font-semibold mb-2 text-[var(--accent)]">Kudlit Rules:</h3>
+            <p class="text-sm mb-2">᜔ = Virama (Krus) - tinatanggal ang "a" sound (ba → b)</p>
+            <p class="text-sm mb-2">Tuldok sa itaas = e/i sound (ba → be/bi)</p>
+            <p class="text-sm">Tuldok sa ibaba = o/u sound (ba → bo/bu)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS TAB -->
+    <div id="flashcards" class="tab-content">
+      <div class="max-w-2xl mx-auto">
+        <div class="card">
+          <h2 class="text-2xl font-bold mb-4 text-center">Flashcards</h2>
+          <p class="text-center text-[var(--text-secondary)] mb-6">I-click ang card para i-flip</p>
+
+          <div class="flashcard" id="flashcard">
+            <div class="flashcard-inner">
+              <div class="flashcard-front">
+                <div class="baybayin text-6xl mb-4" id="flashcardFront">ᜊ</div>
+                <p class="text-[var(--text-secondary)]">Ano ang basa?</p>
+              </div>
+              <div class="flashcard-back">
+                <div class="text-5xl font-bold mb-2" id="flashcardBack">ba</div>
+                <p class="opacity-90">Tap para bumalik</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center mt-6">
+            <button class="btn btn-secondary" onclick="prevCard()">← Nakaraan</button>
+            <span class="text-sm font-medium" id="cardCounter">1 / 17</span>
+            <button class="btn" onclick="nextCard()">Susunod →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ TAB -->
+    <div id="quiz" class="tab-content">
+      <div class="max-w-2xl mx-auto">
+        <div class="card">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Quiz</h2>
+            <div class="text-right">
+              <div class="text-sm text-[var(--text-secondary)]">Score</div>
+              <div class="text-2xl font-bold text-[var(--accent)]"><span id="quizScore">0</span> / <span id="quizTotal">5</span></div>
+            </div>
+          </div>
+
+          <div id="quizContainer">
+            <div class="text-center mb-6">
+              <p class="text-sm text-[var(--text-secondary)] mb-4">Ano ang katumbas na Baybayin ng:</p>
+              <div class="text-5xl font-bold mb-6" id="quizQuestion">ba</div>
+            </div>
+
+            <div class="grid gap-3" id="quizOptions"></div>
+
+            <button class="btn w-full mt-6" id="nextQuizBtn" onclick="nextQuestion()" style="display:none;">Susunod na Tanong</button>
+          </div>
+
+          <div id="quizResult" style="display:none;" class="text-center py-8">
+            <div class="text-6xl mb-4">🎉</div>
+            <h3 class="text-2xl font-bold mb-2">Tapos na!</h3>
+            <p class="text-xl mb-6">Final Score: <span class="text-[var(--accent)] font-bold" id="finalScore"></span></p>
+            <button class="btn" onclick="resetQuiz()">Ulitin ang Quiz</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKSHEET TAB -->
+    <div id="worksheet" class="tab-content">
+      <div class="card">
+        <h2 class="text-2xl font-bold mb-4">Worksheet - Pagsasanay</h2>
+        <p class="text-[var(--text-secondary)] mb-6">Isulat ang katumbas na Baybayin ng mga sumusunod na salita:</p>
+
+        <div class="grid gap-6">
+          <div>
+            <label class="block font-medium mb-2">1. pilipinas</label>
+            <input type="text" class="input-field baybayin worksheet-input" data-answer="ᜉᜒᜎᜒᜉᜒᜈᜐ᜔" placeholder="I-type dito...">
+            <div class="worksheet-feedback text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2">2. mahal</label>
+            <input type="text" class="input-field baybayin worksheet-input" data-answer="ᜋᜑᜎ᜔" placeholder="I-type dito...">
+            <div class="worksheet-feedback text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2">3. bayan</label>
+            <input type="text" class="input-field baybayin worksheet-input" data-answer="ᜊᜌᜈ᜔" placeholder="I-type dito...">
+            <div class="worksheet-feedback text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2">4. kita</label>
+            <input type="text" class="input-field baybayin worksheet-input" data-answer="ᜃᜒᜆ" placeholder="I-type dito...">
+            <div class="worksheet-feedback text-sm mt-1"></div>
+          </div>
+
+          <div>
+            <label class="block font-medium mb-2">5. salamat</label>
+            <input type="text" class="input-field baybayin worksheet-input" data-answer="ᜐᜎᜋᜆ᜔" placeholder="I-type dito...">
+            <div class="worksheet-feedback text-sm mt-1"></div>
+          </div>
+        </div>
+
+        <button class="btn w-full mt-6" onclick="checkWorksheet()">Check Answers</button>
+      </div>
+    </div>
+  </main>
+
+  <footer class="text-center py-8 text-sm text-[var(--text-secondary)]">
+    <p>Baybayin B17 Interactive © 2024 | Gawang Pilipino para sa mga Pilipino</p>
+  </footer>
+</div>
+
+<script>
+const baybayinMap = {
+  'a': 'ᜀ', 'e': 'ᜁ', 'i': 'ᜁ', 'o': 'ᜂ', 'u': 'ᜂ',
+  'ka': 'ᜃ', 'ga': 'ᜄ', 'nga': 'ᜅ',
+  'ta': 'ᜆ', 'da': 'ᜇ', 'na': 'ᜈ',
+  'pa': 'ᜉ', 'ba': 'ᜊ', 'ma': 'ᜋ',
+  'ya': 'ᜌ', 'ra': 'ᜇ', 'la': 'ᜎ',
+  'wa': 'ᜏ', 'sa': 'ᜐ', 'ha': 'ᜑ'
+};
+
+// FIXED: Krus virama na ito, hindi Plus!
+const virama = '\u170D';
+
+const foreignLetterMap = {
+  'c': 'k',
+  'f': 'p',
+  'j': 'dy',
+  'ñ': 'ny',
+  'q': 'k',
+  'v': 'b',
+  'x': 'ks',
+  'z': 's'
+};
+
+const foreignLetters = ['c', 'f', 'j', 'ñ', 'q', 'v', 'x', 'z'];
+
+const flashcards = [
+  { char: 'ᜀ', roman: 'a' }, { char: 'ᜁ', roman: 'e/i' }, { char: 'ᜂ', roman: 'o/u' },
+  { char: 'ᜃ', roman: 'ka' }, { char: 'ᜄ', roman: 'ga' }, { char: 'ᜅ', roman: 'nga' },
+  { char: 'ᜆ', roman: 'ta' }, { char: 'ᜇ', roman: 'da/ra' }, { char: 'ᜈ', roman: 'na' },
+  { char: 'ᜉ', roman: 'pa' }, { char: 'ᜊ', roman: 'ba' }, { char: 'ᜋ', roman: 'ma' },
+  { char: 'ᜌ', roman: 'ya' }, { char: 'ᜎ', roman: 'la' }, { char: 'ᜏ', roman: 'wa' },
+  { char: 'ᜐ', roman: 'sa' }, { char: 'ᜑ', roman: 'ha' }
+];
+
+let currentCard = 0;
+let quizQuestions = [];
+let currentQuiz = 0;
+let quizScore = 0;
+
+function filipinizeWord(word) {
+  const lower = word.toLowerCase();
+  let result = '';
+  let conversions = [];
+
+  for (let i = 0; i < lower.length; i++) {
+    const char = lower[i];
+    if (foreignLetterMap[char]) {
+      const replacement = foreignLetterMap[char];
+      result += replacement;
+      conversions.push({ from: char.toUpperCase(), to: replacement.toUpperCase() });
+    } else {
+      result += char;
+    }
+  }
+
+  return { word: result, conversions };
+}
+
+// FIXED: B17 SYLLABIFICATION - CV, V, or single C lang
 function syllabify(word) {
   // B17 RULE: CV, V, or single C lang
   word = word.toLowerCase().replace(/[^a-z]/g, '');
 
-  // Handle double letters: coffee → cofi, quezon → keson
-  word = word.replace(/cc/g, 'k').replace(/qu/g, 'k').replace(/c/g, 'k');
-  word = word.replace(/([a-z])\1+/g, '$1');
-
-  const vowels = 'aeiou';
-  const syllables = [];
-  let i = 0;
-
-  while (i < word.length) {
-    // Rule 1: Consonant + Vowel = CV syllable
-    if (i + 1 < word.length && vowels.includes(word[i + 1])) {
-      syllables.push(word[i] + word[i + 1]);
-      i += 2;
-    }
-    // Rule 2: Single vowel = V syllable
-    else if (vowels.includes(word[i])) {
-      syllables.push(word[i]);
-      i++;
-    }
-    // Rule 3: Single consonant = C + virama later
-    else {
-      syllables.push(word[i]);
-      i++;
-    }
-  }
-  return syllables;
-}
+  // Handle

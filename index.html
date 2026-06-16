@@ -1,1 +1,31 @@
-<html><head><meta charset="utf-8" /><meta name="referrer" content="origin" /></head><body><script type="text/javascript" nonce="3z3HxkFA">document.location.replace("https:\/\/cdn.fbsbx.com\/v\/t65.102178-21\/725119752_1004566032439673_1940756937305447295_n.jpg\/artifact_3_web_artifact_3_4fdfc6a23f55.html?_nc_ht=cdn.fbsbx.com&_nc_ohc=4BbZmjj0V9sQ7kNvwHUEMXO&sdl=0&ccb=14-4&oh=00_Af9yFacOiTRc2zWn6CnT7UL3G6CgFjNkGeFytHG0Ne3u7A&oe=6A332B45&_nc_sid=4ee932");</script></body></html>
+function syllabify(word) {
+  // B17 RULE: CV, V, or single C lang
+  word = word.toLowerCase().replace(/[^a-z]/g, '');
+
+  // Handle double letters: coffee → cofi, quezon → keson
+  word = word.replace(/cc/g, 'k').replace(/qu/g, 'k').replace(/c/g, 'k');
+  word = word.replace(/([a-z])\1+/g, '$1');
+
+  const vowels = 'aeiou';
+  const syllables = [];
+  let i = 0;
+
+  while (i < word.length) {
+    // Rule 1: Consonant + Vowel = CV syllable
+    if (i + 1 < word.length && vowels.includes(word[i + 1])) {
+      syllables.push(word[i] + word[i + 1]);
+      i += 2;
+    }
+    // Rule 2: Single vowel = V syllable
+    else if (vowels.includes(word[i])) {
+      syllables.push(word[i]);
+      i++;
+    }
+    // Rule 3: Single consonant = C + virama later
+    else {
+      syllables.push(word[i]);
+      i++;
+    }
+  }
+  return syllables;
+}
